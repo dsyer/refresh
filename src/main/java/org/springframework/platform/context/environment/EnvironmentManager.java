@@ -26,11 +26,13 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Dave Syer
  *
  */
+@Component
 @ManagedResource
 public class EnvironmentManager implements ApplicationEventPublisherAware {
 

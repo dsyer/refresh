@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.platform.context.environment;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import javax.servlet.ServletException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +40,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringApplicationConfiguration(classes = TestConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -59,9 +63,21 @@ public class EnvironmentManagerIntegrationTests {
 	public void testRefresh() throws Exception {
 		assertEquals("Hello scope!", properties.getMessage());
 		// Change the dynamic property source...
-		this.mvc.perform(post("/env").param("message", "Foo")).andExpect(status().isOk())
-				.andExpect(content().string("{\"message\":\"Foo\"}"));
+		this.mvc.perform(post("/env").param("message", "Foo")).andExpect(status().isOk()).andExpect(
+				content().string("{\"message\":\"Foo\"}"));
 		assertEquals("Foo", properties.getMessage());
+	}
+
+	@Test
+	public void testRefreshFails() throws Exception {
+		try {
+			this.mvc.perform(post("/env").param("delay", "foo")).andExpect(
+					status().is5xxServerError());
+			fail("expected ServletException");
+		} catch (ServletException e) {
+			// The underlying BindException is not handled by the dispatcher servlet
+		}
+		assertEquals(0, properties.getDelay());
 	}
 
 	public static void main(String[] args) {
@@ -81,7 +97,9 @@ public class EnvironmentManagerIntegrationTests {
 
 	@ConfigurationProperties
 	protected static class TestProperties {
+
 		private String message;
+
 		private int delay;
 
 		public String getMessage() {

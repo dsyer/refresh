@@ -451,7 +451,13 @@ public class GenericScope implements Scope, BeanFactoryPostProcessor,
 		}
 
 		public void destroy() {
-			context.getCallback().run();
+			if (context==null) {
+				return;
+			}
+			Runnable callback = context.getCallback();
+			if (callback!=null) {
+				callback.run();
+			}
 		}
 
 		@Override

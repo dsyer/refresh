@@ -30,11 +30,13 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.platform.context.environment.EnvironmentChangeEvent;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Dave Syer
  *
  */
+@Component
 @ManagedResource
 public class ConfigurationPropertiesRebinder implements BeanPostProcessor, ApplicationListener<EnvironmentChangeEvent> {
 

@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.platform.context.scope.refresh;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +48,7 @@ import org.springframework.platform.context.scope.refresh.MoreRefreshScopeIntegr
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@SpringApplicationConfiguration(classes=TestConfiguration.class)
+@SpringApplicationConfiguration(classes = TestConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class MoreRefreshScopeIntegrationTests {
 
@@ -57,7 +60,7 @@ public class MoreRefreshScopeIntegrationTests {
 
 	@Autowired
 	private org.springframework.platform.context.scope.refresh.RefreshScope scope;
-	
+
 	@Autowired
 	private ConfigurableEnvironment environment;
 
@@ -95,14 +98,38 @@ public class MoreRefreshScopeIntegrationTests {
 		assertNotSame(id1, id2);
 	}
 
+	@Test
+	@DirtiesContext
+	public void testRefreshFails() throws Exception {
+		assertEquals("Hello scope!", service.getMessage());
+		// Change the dynamic property source...
+		EnvironmentTestUtils.addEnvironment(environment, "message:Foo", "delay:foo");
+		// ...and then refresh, so the bean is re-initialized:
+		scope.refreshAll();
+		try {
+			// If a refresh fails (e.g. a binding error in this case) the application is
+			// basically hosed.
+			assertEquals("Hello scope!", service.getMessage());
+			fail("expected BeanCreationException");
+		} catch (BeanCreationException e) {
+		}
+		// But we can fix it by fixing the binding error:
+		EnvironmentTestUtils.addEnvironment(environment, "delay:0");
+		// ...and then refresh, so the bean is re-initialized:
+		scope.refreshAll();
+		assertEquals("Foo", service.getMessage());
+	}
+
 	public static class TestService implements InitializingBean, DisposableBean {
 
 		private static Log logger = LogFactory.getLog(TestService.class);
 
 		private volatile static int initCount = 0;
+
 		private volatile static int destroyCount = 0;
 
 		private String message = null;
+
 		private volatile long delay = 0;
 
 		public void setDelay(long delay) {
@@ -150,18 +177,18 @@ public class MoreRefreshScopeIntegrationTests {
 		}
 
 	}
-	
+
 	@Configuration
 	@EnableConfigurationProperties
-	@Import({RefreshAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class})
+	@Import({ RefreshAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
 	protected static class TestConfiguration {
-		
+
 		@Bean
 		@RefreshScope
 		protected TestProperties properties() {
 			return new TestProperties();
 		}
-		
+
 		@Bean
 		@RefreshScope
 		public TestService service() {
@@ -170,28 +197,34 @@ public class MoreRefreshScopeIntegrationTests {
 			service.setDelay(properties().getDelay());
 			return service;
 		}
-		
+
 	}
 
 	@ConfigurationProperties
 	@ManagedResource
 	protected static class TestProperties {
+
 		private String message;
+
 		private int delay;
+
 		@ManagedAttribute
 		public String getMessage() {
 			return message;
 		}
+
 		public void setMessage(String message) {
 			this.message = message;
 		}
+
 		@ManagedAttribute
 		public int getDelay() {
 			return delay;
 		}
+
 		public void setDelay(int delay) {
 			this.delay = delay;
 		}
 	}
-	
+
 }

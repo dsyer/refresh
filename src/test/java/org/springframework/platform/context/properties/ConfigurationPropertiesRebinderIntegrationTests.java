@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.platform.context.autoconfigure.RefreshAutoConfiguration;
+import org.springframework.platform.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.platform.context.properties.ConfigurationPropertiesRebinderIntegrationTests.TestConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

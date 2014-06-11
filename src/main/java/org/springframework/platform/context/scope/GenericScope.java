@@ -42,8 +42,8 @@ import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.platform.context.config.BeanLifecycleDecorator;
-import org.springframework.platform.context.config.StandardBeanLifecycleDecorator;
 import org.springframework.platform.context.config.BeanLifecycleDecorator.Context;
+import org.springframework.platform.context.config.StandardBeanLifecycleDecorator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
@@ -449,7 +449,7 @@ public class GenericScope implements Scope, BeanFactoryPostProcessor,
 			}
 			return bean;
 		}
-
+		
 		public void destroy() {
 			if (context==null) {
 				return;

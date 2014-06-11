@@ -16,17 +16,8 @@
 package org.springframework.platform.context.scope.refresh;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,20 +37,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.platform.context.autoconfigure.RefreshAutoConfiguration;
+import org.springframework.platform.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.platform.context.config.annotation.RefreshScope;
 import org.springframework.platform.context.scope.refresh.RefreshScopeIntegrationTests.TestConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @SpringApplicationConfiguration(classes=TestConfiguration.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class RefreshScopeIntegrationTests {
-
-	private static Log logger = LogFactory.getLog(RefreshScopeIntegrationTests.class);
-
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	@Autowired
 	private Service service;
@@ -118,40 +104,6 @@ public class RefreshScopeIntegrationTests {
 		assertEquals(2, ExampleService.getInitCount());
 		assertEquals(1, ExampleService.getDestroyCount());
 		assertNotSame(id1, id2);
-	}
-
-	@Test
-	@Repeat(10)
-	@DirtiesContext
-	public void testConcurrentRefresh() throws Exception {
-		ExampleService.reset();
-		assertEquals("Hello scope!", service.getMessage());
-		properties.setMessage("Foo");
-		properties.setDelay(500);
-		final CountDownLatch latch = new CountDownLatch(1);
-		Future<String> result = executor.submit(new Callable<String>() {
-			public String call() throws Exception {
-				logger.debug("Background started.");
-				try {
-					latch.countDown();
-					return service.getMessage();
-				} finally {
-					logger.debug("Background done.");
-				}
-			}
-		});
-		assertTrue(latch.await(500, TimeUnit.MILLISECONDS));
-		logger.info("Refreshing");
-		scope.refreshAll();
-		assertEquals("Foo", service.getMessage());
-		/*
-		 * This is the most important assertion: we don't want a null value because that means the bean was destroyed
-		 * and not re-initialized before we accessed it.
-		 */
-		assertNotNull(result.get());
-		assertEquals("Hello scope!", result.get());
-		assertTrue(Arrays.asList(2, 3).contains(ExampleService.getInitCount()));
-		assertTrue(Arrays.asList(1, 2).contains(ExampleService.getDestroyCount()));
 	}
 
 	public static interface Service {

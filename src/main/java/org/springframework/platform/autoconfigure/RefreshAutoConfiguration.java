@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.springframework.platform.context.autoconfigure;
+package org.springframework.platform.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration;

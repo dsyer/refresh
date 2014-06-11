@@ -1,3 +1,11 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.springframework.platform.context.autoconfigure.RefreshAutoConfiguration
+org.springframework.platform.autoconfigure.RefreshAutoConfiguration
+
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+org.springframework.platform.bootstrap.BootstrapApplicationListener
+
+# Bootstrap components
+org.springframework.platform.bootstrap.BootstrapConfiguration=\
+org.springframework.platform.bootstrap.config.ConfigServiceBootstrapConfiguration

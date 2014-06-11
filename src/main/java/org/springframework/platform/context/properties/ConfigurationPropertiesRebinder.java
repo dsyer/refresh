@@ -16,6 +16,7 @@
 package org.springframework.platform.context.properties;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -96,7 +97,7 @@ public class ConfigurationPropertiesRebinder implements BeanPostProcessor, Appli
 	
 	@ManagedAttribute
 	public Set<String> getBeanNames() {
-		return beans.keySet();
+		return new HashSet<String>(beans.keySet());
 	}
 	
 	@Override
